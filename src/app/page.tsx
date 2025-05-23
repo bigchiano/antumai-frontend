@@ -1,100 +1,132 @@
-import Image from "next/image";
+// app/page.tsx (Landing Page)
+"use client";
+import { useState } from "react";
+import axios from "axios";
+import Head from "next/head";
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await axios.post("http://localhost:4000/ask", {
+        name, 
+        input: message,
+      });
+      const data = await res.data;
+      setResponse(data.reply);
+      // Use TTS
+      const utterance = new SpeechSynthesisUtterance(data.reply);
+      speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.error(err);
+      setResponse("Sorry, something went wrong.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="bg-white min-h-screen text-gray-900">
+      <Head>
+        <title>AntumAI</title>
+        <meta name="description" content="Your personal AI, owned by you." />
+      </Head>
+
+      {/* Header */}
+      <header className="w-full py-6 px-4 md:px-12 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-indigo-600">AntumAI</h1>
+        <Link
+          href="/signup"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+        >
+          Try It Now
+        </Link>
+      </header>
+
+      {/* Hero Section */}
+      <section className="px-4 md:px-12 py-20 text-center max-w-4xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
+          Your AI. Your Data. Your Control.
+        </h2>
+        <p className="text-lg md:text-xl mb-8">
+          AntumAI is making it easier for you to have your own AI trained on
+          your data, running on your terms, and owned by you. It’s like having
+          your personal AI in a mobile app but private, open, and under your
+          control.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Your name"
+            className="w-full max-w-md px-4 py-2 border rounded-md"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <input
+            type="text"
+            placeholder="How was your day?"
+            className="w-full max-w-md px-4 py-2 border rounded-md"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700"
+            disabled={loading}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {loading ? "Sending..." : "Talk to AI"}
+          </button>
+        </form>
+        {response && (
+          <div className="mt-6 text-lg text-left bg-gray-100 p-4 rounded-md max-w-2xl mx-auto">
+            <p>
+              <strong>AntumAI:</strong> {response}
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Features */}
+      <section className="bg-gray-100 py-16 px-4 md:px-12">
+        <div className="max-w-5xl mx-auto text-center">
+          <h3 className="text-3xl font-semibold mb-8">Why AntumAI?</h3>
+          <div className="grid md:grid-cols-3 gap-8 text-left">
+            <div>
+              <h4 className="text-xl font-semibold mb-2">Privacy First</h4>
+              <p>
+                Everything runs on your terms. No centralized data harvesting.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-xl font-semibold mb-2">Truly Yours</h4>
+              <p>
+                Train AI on your own data. Your conversations belong to you.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-xl font-semibold mb-2">Mobile-Ready</h4>
+              <p>
+                Works like an app — fast, sleek, and always there when you need
+                it.
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8 text-center">
+        <p className="text-sm">
+          &copy; {new Date().getFullYear()} AntumAI. All rights reserved.
+        </p>
       </footer>
     </div>
   );
