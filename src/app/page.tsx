@@ -15,7 +15,7 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:4000/ask", {
+      const res = await axios.post("https://antumai-backend.netlify.app/ask", {
         name, 
         input: message,
       });
